@@ -55,23 +55,6 @@ def getModel(dropout=.25, learning_rate=0.001, augmentation=False):
 
   return model
 
-# Function that returns the simpler model:
-def getSimplerModel(neurons=256, dropout=.25, learning_rate=0.001):
-
-  inputs = tf.keras.Input(shape=(299, 299, 3))
-  x = tf.keras.applications.inception_v3.preprocess_input(inputs)
-  x = tf.keras.layers.Flatten()(x)
-  x = tf.keras.layers.Dense(neurons, activation='relu')(x)
-  x = tf.keras.layers.Dropout(dropout)(x)
-  x = tf.keras.layers.BatchNormalization()(x)
-  outputs = tf.keras.layers.Dense(37,activation='softmax')(x)
-  model = tf.keras.Model(inputs, outputs)
-  model.summary()
-
-  model.compile(loss='categorical_crossentropy', optimizer=Adam(learning_rate=learning_rate), metrics=['accuracy'])
-
-  return model
-
 # Function to encode y to arrays of 0's and 1's so it checks out with the model we have
 onehot_encoder = OneHotEncoder(sparse=False)
 def onehotencode_func(y):
@@ -208,8 +191,7 @@ def test_params(lr, model_func):
 
 
 # Displaying the confusion matrix and metrics table
-# This was done after analysing the data (this is done on the next notebook) to find out the best parameters.
-# Through our analysis, we discovered that the best parameters were:
+# This was done after analysing the data
 # learning rate = 0.001
 # dropout value = 0.25
 # First we get a new model and train it with all the training data available:
