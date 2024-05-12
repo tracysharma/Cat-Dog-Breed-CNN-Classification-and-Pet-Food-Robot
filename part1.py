@@ -7,21 +7,11 @@ import numpy as np
 import pickle
 from mpl_toolkits.axes_grid1 import ImageGrid
 import zipfile
-
-
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten, Conv2D, MaxPooling2D
 
-# # Define the path to your zip file
-# zip_path = 'archive.zip'  # Adjust if your zip file has a different name
-# extraction_path = os.path.dirname(zip_path)  # Extract in the same directory as the zip file
-
-# # Create a ZipFile object and extract its contents
-# with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-#     zip_ref.extractall(extraction_path)
-
-# print('Extraction Complete.')
+# First you need to download dataset from Kaggle and extract the zip file in this directory befrore starting
 
 # Getting list of images (excluding some that do not open)
 ROOT = 'archive'
@@ -99,11 +89,8 @@ print('There are ' + str(nr_cats) + ' images of cats, and ' + str(nr_dogs) + ' o
 IMG_SIZE = 299
 
 def getXy(rem_background=False, imgs=None):
-  # function that returns the number correspondent to the breed of   the animal in the image, given the image name
+  # function that returns the number correspondent to the breed of the animal in the image, given the image name
   get_class_no = lambda name : info_by_breed[get_breed(name)]  ['globalid']
-  
-  # this set was only used in the begining, before knowing which   images were not opening
-  # bad = set()
   
   # all image tensors will be stored here after resizing
   training_data = []
@@ -111,16 +98,10 @@ def getXy(rem_background=False, imgs=None):
   for img in all_imgs:
     path = os.path.join(IMGS_PATH, img)
   
-    # this is a trick to make the image be opened in RGB format,   which is not the default
+    # this is a trick to make the image be opened in RGB format, which is not the default
     img_array = cv2.imread(path)[...,::-1] 
   
-    # this next block of code, just like the 'bad' set, was   used before finding out "bad" images
-    # if img_array is None:
-    #   bad.add(img)
-    #   continue
-  
     if rem_background:
-
       trimap_filename = img.rsplit('.', 1)[0] + '.png'
       if trimap_filename in all_trimaps:
         tri_array = cv2.imread(os.path.join(TRIMAP_PATH, trimap_filename))
@@ -131,7 +112,6 @@ def getXy(rem_background=False, imgs=None):
         
         # then it is multiplied so that the background pixels multiply by 0 and get "removed"
         img_array = np.multiply(tri_array, img_array)
-
 
     # here the images are rezise
     img_array = cv2.resize(img_array, (IMG_SIZE, IMG_SIZE))
@@ -162,12 +142,12 @@ def save(obj, fic_name, open_type='wb'):
   pickle.dump(obj, pickle_out)
   pickle_out.close()
 
-# this is a dictionary that is going to be used to map the ID to a path to an image, with the same goal as the list before
+# a dictionary that is going to be used to map the ID to a path to an image
 imgs = {}
 
 X, y = getXy(imgs=imgs, rem_background=False)
-save(X, 'X299.pickle')
-save(y, 'y299.pickle')
+save(X, 'X.pickle')
+save(y, 'y.pickle')
 print(X.shape)
 
 # Display a chart containing one image per breed in the data set
@@ -197,33 +177,6 @@ plt.show()
 
 # Save data from images without background as well
 X, y = getXy(rem_background=True)
-save(X, 'X299_noBG.pickle')
-save(y, 'y299_noBG.pickle')
+save(X, 'X_noBG.pickle')
+save(y, 'y_noBG.pickle')
 print(X.shape)
-
-# Showing two images of breeds often mispredicted
-pics = ['Bengal_29.jpg', 'Egyptian_Mau_115.jpg']
-# pics = ['Bombay_162.jpg', 'shiba_inu_39.jpg']
-pics = [os.path.join(IMGS_PATH, p) for p in pics]
-figs = [cv2.resize(cv2.imread(p)[...,::-1], (IMG_SIZE, IMG_SIZE)) for p in pics]
-
-fig = plt.figure(figsize=(15,15))
-grid = ImageGrid(
-    fig,
-    111,
-    nrows_ncols=(1, 2),
-    axes_pad=0.3
-)
-
-i = 1
-for ax, im in zip(grid, figs):
-    # putting the correspondent number at the top:
-    ax.set_title('Bengal' if i == 1 else 'Egyptian Mau', loc='right')
-    # ax.set_title('Bombay' if i == 1 else 'Shiba Inu', loc='right')
-    ax.imshow(im)
-    ax.axis('off')
-    i+=1
-
-fig.subplots_adjust(top=1.38)
-fig.suptitle('Example of Two Breeds', size='xx-large')
-plt.show()
