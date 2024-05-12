@@ -8,22 +8,20 @@ import time
 import numpy as np
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.model_selection import train_test_split
-import pickle
 from sklearn.model_selection import StratifiedKFold
 from tensorflow.keras.applications.inception_v3 import preprocess_input
 from mpl_toolkits.axes_grid1 import ImageGrid
 import matplotlib.pyplot as plt
 import cv2
-
 from sklearn import metrics
-import matplotlib.pyplot as plt
+import pydot
 
 # Loading files
 # To test with other files (for example, with the background removed) this file names should be changed to the appropriate ones and everything works fine
-X = pickle.load(open("X299.pickle","rb"))
+X = pickle.load(open("X.pickle","rb"))
 X = np.array(X)
 
-y = pickle.load(open("y299.pickle","rb"))
+y = pickle.load(open("y.pickle","rb"))
 y = np.array(y)
 
 # Split data into training and testing data
@@ -82,8 +80,8 @@ def onehotencode_func(y):
   return onehot_encoded
 
 # Defining values that will be experimented with and setting up k-fold cross validation
-learning_rate_list = [0.01, 0.001]
-dropout_values_list = [0.25, 0.35]
+learning_rate_list = [0.001]
+dropout_values_list = [0.25]
 
 # 3-fold cross validation will be used because its computationally easier/faster
 kfold = StratifiedKFold(n_splits=3, shuffle=True)
@@ -126,7 +124,7 @@ def test_params(lr, model_func):
     y_train_kf, y_val_kf = onehotencode_func(y_train[train_index]), onehotencode_func(y_train[val_index])
 
     # training the model with data from the train data folds
-    historytemp = model.fit(x_train_kf, y_train_kf, batch_size=32, epochs=15, validation_data=(x_val_kf, y_val_kf))
+    historytemp = model.fit(x_train_kf, y_train_kf, batch_size=32, epochs=5, validation_data=(x_val_kf, y_val_kf))
 
     del model
 
@@ -156,68 +154,68 @@ def test_params(lr, model_func):
 
 # To use the simpler model, the function that the lambda functions are calling should be changed to getSimplerModel
 # changing learning rate:
-lr_model_func = lambda x : getSimplerModel(learning_rate=x)
-for lr in learning_rate_list:
-  hist['learning_rate'][lr] = test_params(lr, lr_model_func)
+# lr_model_func = lambda x : getModel(learning_rate=x)
+# for lr in learning_rate_list:
+#   hist['learning_rate'][lr] = test_params(lr, lr_model_func)
 
-save_in_file('learning_rate', hist, 'data299.pickle')
-
-
-# chaning dropout value:
-drop_model_func = lambda x : getModel(dropout=x)
-for d in dropout_values_list:
-  hist['dropout'][d] = test_params(d, drop_model_func)
-
-save_in_file('dropout', hist, 'data299.pickle')
+# save_in_file('learning_rate', hist, 'data.pickle')
 
 
-print(read_file('data299.pickle'))
+# # chaning dropout value:
+# drop_model_func = lambda x : getModel(dropout=x)
+# for d in dropout_values_list:
+#   hist['dropout'][d] = test_params(d, drop_model_func)
 
-# Displaying a representation of the neural network architecture
-# Just like before, adding the parameter augmentation=True to the getModel function will add the data augmentation layers
-# first we get a model
-m = getModel()
+# save_in_file('dropout', hist, 'data.pickle')
 
-# then we generate the diagram
-diagram_file = 'model_diagram_complex.png'
-im = tf.keras.utils.plot_model(
-    m, to_file=diagram_file, show_shapes=False, show_dtype=False,
-    show_layer_names=True, rankdir='TB', expand_nested=False, dpi=96
-)
 
-# this displays the diagram without title
-# display(im)
+# print(read_file('data.pickle'))
 
-# to add a title:
-img = [cv2.imread(diagram_file)]
+# # Displaying a representation of the neural network architecture
+# # Just like before, adding the parameter augmentation=True to the getModel function will add the data augmentation layers
+# # first we get a model
+# m = getModel()
 
-fig = plt.figure(figsize=(15,15))
-grid = ImageGrid(
-    fig,
-    111,
-    nrows_ncols=(1,1),
-    axes_pad=0.7
-)
+# # then we generate the diagram
+# diagram_file = 'model_diagram_complex.png'
+# im = tf.keras.utils.plot_model(
+#     m, to_file=diagram_file, show_shapes=False, show_dtype=False,
+#     show_layer_names=True, rankdir='TB', expand_nested=False, dpi=96
+# )
 
-for ax, im in zip(grid, img):
-    ax.imshow(im)
-    ax.axis('off')
+# # this displays the diagram without title
+# # display(im)
 
-fig.subplots_adjust(top=.95)
-fig.suptitle('Complex Neural Network Architecture Diagram', size='xx-large')
-plt.show()
+# # to add a title:
+# img = [cv2.imread(diagram_file)]
+
+# fig = plt.figure(figsize=(15,15))
+# grid = ImageGrid(
+#     fig,
+#     111,
+#     nrows_ncols=(1,1),
+#     axes_pad=0.7
+# )
+
+# for ax, im in zip(grid, img):
+#     ax.imshow(im)
+#     ax.axis('off')
+
+# fig.subplots_adjust(top=.95)
+# fig.suptitle('Complex Neural Network Architecture Diagram', size='xx-large')
+# plt.show()
+
+
 
 # Displaying the confusion matrix and metrics table
 # This was done after analysing the data (this is done on the next notebook) to find out the best parameters.
-
 # Through our analysis, we discovered that the best parameters were:
-
 # learning rate = 0.001
-# dropout value = 0.35
+# dropout value = 0.25
 # First we get a new model and train it with all the training data available:
 
-model = getModel(learning_rate=0.001, dropout=0.35)
-model.fit(x_train, onehotencode_func(y_train), batch_size=32, epochs=15)
+model = getModel(learning_rate=0.001, dropout=0.25)
+model.fit(x_train, onehotencode_func(y_train), batch_size=32, epochs=5)
 
 # Getting the predictions of the test data and transforming it to a number (selecting the index of the maximum value and summing one):
 y_pred = model.predict(x_test)
@@ -270,11 +268,11 @@ fine_tune_at = 208
 for layer in base_model.layers[:fine_tune_at]:
   layer.trainable =  False
 
-# The learning rate used in this process should be lower because the model to be trained is huge, so smaller steps are better in order for it not to overfit Now we fit on the data once again for 10 more epochs
+# The learning rate used in this process should be lower because the model to be trained is huge, so smaller steps are better in order for it not to overfit Now we fit on the data once again for 5 more epochs
 model.compile(loss=tf.keras.losses.CategoricalCrossentropy(),
               optimizer = tf.keras.optimizers.RMSprop(lr=0.001/10),
               metrics=['accuracy'])
 
-fine_tune_epochs = 10
-total_epochs =  15 + fine_tune_epochs
-model.fit(x_train, y_train_2, batch_size=32,initial_epoch=initial_epochs, epochs=total_epochs, validation_split=0.3)
+fine_tune_epochs = 5
+total_epochs =  5 + fine_tune_epochs
+model.fit(x_train, onehotencode_func(y_train), batch_size=32,initial_epoch=5, epochs=total_epochs, validation_split=0.3)

@@ -17,7 +17,7 @@ def read_file(f):
 
 # Reading the files with historic information about the hyper parameter tuning
 # The name of the file passed to the read_file function should be changed to the correct name of the file
-l = read_file('data_v2.pickle')
+l = read_file('data.pickle')
 lr = l[-2]['learning_rate']
 d = l[-1]['dropout']
 
