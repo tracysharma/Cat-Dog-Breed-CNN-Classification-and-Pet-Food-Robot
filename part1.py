@@ -150,31 +150,6 @@ save(X, 'X.pickle')
 save(y, 'y.pickle')
 print(X.shape)
 
-# Display a chart containing one image per breed in the data set
-# getting a list of all images we want to show in order
-ids = sorted(list(imgs.keys()))
-figs = [cv2.resize(cv2.imread(imgs[i])[...,::-1], (IMG_SIZE, IMG_SIZE)) for i in ids]
-
-fig = plt.figure(figsize=(15,15))
-grid = ImageGrid(
-    fig,
-    111,
-    nrows_ncols=(5, 8),
-    axes_pad=0.3
-)
-
-i = 1
-for ax, im in zip(grid, figs):
-    # putting the correspondent number at the top:
-    ax.set_title(i, loc='right')
-    ax.imshow(im)
-    ax.axis('off')
-    i+=1
-
-fig.subplots_adjust(top=1.27)
-fig.suptitle('Examples of Pet Image per Breed', size='xx-large')
-plt.show()
-
 # Save data from images without background as well
 X, y = getXy(rem_background=True)
 save(X, 'X_noBG.pickle')
