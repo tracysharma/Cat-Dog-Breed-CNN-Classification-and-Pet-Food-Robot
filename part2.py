@@ -132,27 +132,24 @@ def test_params(lr, model_func):
 
   return dic
 
-# Setting up the experiences
-# To use the model with the data augmentation layers, a parameter augmentation=True should be passed to the getModel functions
-
-# To use the simpler model, the function that the lambda functions are calling should be changed to getSimplerModel
+# Setting up the training
 # changing learning rate:
-# lr_model_func = lambda x : getModel(learning_rate=x)
-# for lr in learning_rate_list:
-#   hist['learning_rate'][lr] = test_params(lr, lr_model_func)
+lr_model_func = lambda x : getModel(learning_rate=x)
+for lr in learning_rate_list:
+  hist['learning_rate'][lr] = test_params(lr, lr_model_func)
 
-# save_in_file('learning_rate', hist, 'data.pickle')
-
-
-# # chaning dropout value:
-# drop_model_func = lambda x : getModel(dropout=x)
-# for d in dropout_values_list:
-#   hist['dropout'][d] = test_params(d, drop_model_func)
-
-# save_in_file('dropout', hist, 'data.pickle')
+save_in_file('learning_rate', hist, 'data.pickle')
 
 
-# print(read_file('data.pickle'))
+# chaning dropout value:
+drop_model_func = lambda x : getModel(dropout=x)
+for d in dropout_values_list:
+  hist['dropout'][d] = test_params(d, drop_model_func)
+
+save_in_file('dropout', hist, 'data.pickle')
+
+
+print(read_file('data.pickle'))
 
 # # Displaying a representation of the neural network architecture
 # # Just like before, adding the parameter augmentation=True to the getModel function will add the data augmentation layers
